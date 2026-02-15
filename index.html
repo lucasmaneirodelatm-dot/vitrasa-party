@@ -133,22 +133,22 @@
     // PRUEBAS INTERACTIVAS
     const challenges = [
       {
-        name: '🔢 Matemáticas Rápidas',
+        name: '🔢 Matemáticas Vitraseras',
         type: 'math',
         data: [
-          { problem: '5 + 3 = ?', options: ['6', '7', '8', '9'], correct: 2 },
-          { problem: '12 - 4 = ?', options: ['7', '8', '9', '10'], correct: 1 },
-          { problem: '6 × 2 = ?', options: ['10', '11', '12', '13'], correct: 2 },
-          { problem: '15 ÷ 3 = ?', options: ['4', '5', '6', '7'], correct: 1 },
-          { problem: '9 + 6 = ?', options: ['14', '15', '16', '17'], correct: 1 }
+          { problem: 'Cada cuántos minutos pasa el C1', options: ['6', '15', '10', '20'], correct: 2 },
+          { problem: 'Cuántos minutos tarda el C3.D en llegar desde la Encarnación hasta Bouzas', options: ['40', '45', '50', '60'], correct: 1 },
+          { problem: 'Los recesos del A en Ciencias do Mar + Recesos 15C en Viveiros Adoa(Laborables)', options: ['0', '3', '5', '10'], correct: 2 },
+          { problem: 'Número de Salidas 7 desde Pza. España a San Cosme', options: ['15', '10', '6', '1'], correct: 1 },
+          { problem: 'Número de Salidas diarias de la L18', options: ['2', '0', '5', '43'], correct: 1 }
         ]
       },
       {
-        name: '🎨 Emojis Iguales',
+        name: '🎨 Imágenes Iguales',
         type: 'emoji',
         data: [
-          { items: ['🚌', '🚌', '🚕', '🚌', '🚗', '🚌', '🚙', '🚌'], target: '🚌', count: 4 },
-          { items: ['🏖️', '🏝️', '🏖️', '🌴', '🏖️', '🌊', '🏖️', '🏝️'], target: '🏖️', count: 4 },
+          { items: ['https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/31.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/31.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/12B_plaza-america.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/31.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/4A.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/31.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/C3(6).png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/31.png'], target: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/31.png', count: 4 },
+          { items: ['https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/C3-entrando-en-vigo.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/C3(5)_samil.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/C3-entrando-en-vigo.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/C1(3)_a-laxe.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/C3-entrando-en-vigo.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/A(1)_urzaiz%23principe.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/C3-entrando-en-vigo.png', '🏝️'], target: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/C3-entrando-en-vigo.png', count: 4 },
           { items: ['🍤', '🐙', '🦞', '🍤', '🦐', '🍤', '🐚', '🍤'], target: '🍤', count: 4 },
           { items: ['🎸', '🎹', '🎸', '🎺', '🎸', '🥁', '🎸', '🎷'], target: '🎸', count: 4 }
         ]
@@ -157,7 +157,7 @@
         name: '📍 Encuentra la Diferencia',
         type: 'difference',
         data: [
-          { items: ['🔴', '🔵', '🟢', '🟡', '🔴', '🔵', '🟢', '⭐'], target: '⭐', description: 'Encuentra el diferente' },
+          { items: ['https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L15A(1)_pizarro.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L27(2)_pizarro.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L5A(1)_6224_plaza-compostela.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L5A(1)_6224_plaza-compostela.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L15A(1)_pizarro.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L27(2)_pizarro.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L5A(1)_6224_plaza-compostela.png', 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L15C_6239_samil.png'], target: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/L15C_6239_samil.png', description: 'Encuentra el diferente' },
           { items: ['🍎', '🍎', '🍊', '🍎', '🍎', '🍎', '🍎', '🍎'], target: '🍊', description: 'Encuentra el diferente' },
           { items: ['😀', '😀', '😀', '😢', '😀', '😀', '😀', '😀'], target: '😢', description: 'Encuentra el diferente' },
           { items: ['⭐', '⭐', '⭐', '💫', '⭐', '⭐', '⭐', '⭐'], target: '💫', description: 'Encuentra el diferente' }
