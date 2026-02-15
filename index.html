@@ -377,31 +377,55 @@
       }
       
       else if (challenge.type === 'difference') {
-        const item = challenge.data[Math.floor(Math.random() * challenge.data.length)];
-        let html = `<p class="text-center text-sm font-semibold text-gray-800 mb-4">${item.description}</p>`;
-        html += '<div class="grid grid-cols-4 gap-2">';
-        item.items.forEach((emoji, idx) => {
-          html += `<button class="p-2 bg-yellow-100 hover:bg-yellow-200 border-2 border-yellow-300 rounded-lg text-3xl md:text-4xl transition-all challenge-item" onclick="handleAnswer(${idx}, ${item.items.indexOf(item.target)}, ${points})">
-            ${emoji}
-          </button>`;
-        });
-        html += '</div>';
-        contentDiv.innerHTML = html;
-      }
-      
-      else if (challenge.type === 'sequence') {
-        const item = challenge.data[Math.floor(Math.random() * challenge.data.length)];
-        let html = `<p class="text-center text-sm font-semibold text-gray-800 mb-4">${item.description}</p>`;
-        html += '<div id="sequence-container" class="grid grid-cols-5 gap-2 mb-4">';
-        item.items.forEach((emoji, idx) => {
-          html += `<div class="p-2 bg-purple-100 border-2 border-purple-300 rounded-lg text-3xl md:text-4xl text-center cursor-move transition-all" draggable="true" ondragstart="dragStart(event, ${idx})" ondrop="dragDrop(event)" ondragover="allowDrop(event)" data-index="${idx}" data-correct="${item.correct[idx]}">
-            ${emoji}
-          </div>`;
-        });
-        html += '</div>';
-        html += `<button class="w-full p-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-lg transition-all challenge-item" onclick="checkSequence(${points}, [${item.correct}])">Verificar Orden</button>`;
-        contentDiv.innerHTML = html;
-      }
+  const item = challenge.data[Math.floor(Math.random() * challenge.data.length)];
+  let html = `<p class="text-center text-sm font-semibold text-gray-800 mb-4">${item.description}</p>`;
+  
+  html += '<div class="grid grid-cols-4 gap-2">';
+  
+  item.items.forEach((imageSrc, idx) => {
+    html += `
+      <button 
+        class="p-2 bg-yellow-100 hover:bg-yellow-200 border-2 border-yellow-300 rounded-lg transition-all challenge-item flex items-center justify-center"
+        onclick="handleAnswer(${idx}, ${item.items.indexOf(item.target)}, ${points})">
+        
+        <img src="${imageSrc}" 
+             class="w-12 h-12 md:w-16 md:h-16 object-contain pointer-events-none"
+             draggable="false">
+             
+      </button>`;
+  });
+  
+  html += '</div>';
+  contentDiv.innerHTML = html;
+}
+
+else if (challenge.type === 'sequence') {
+  const item = challenge.data[Math.floor(Math.random() * challenge.data.length)];
+  let html = `<p class="text-center text-sm font-semibold text-gray-800 mb-4">${item.description}</p>`;
+  
+  html += '<div id="sequence-container" class="grid grid-cols-5 gap-2 mb-4">';
+  
+  item.items.forEach((imageSrc, idx) => {
+    html += `
+      <div 
+        class="p-2 bg-purple-100 border-2 border-purple-300 rounded-lg flex items-center justify-center cursor-move transition-all"
+        draggable="true"
+        ondragstart="dragStart(event, ${idx})"
+        ondrop="dragDrop(event)"
+        ondragover="allowDrop(event)"
+        data-index="${idx}"
+        data-correct="${item.correct[idx]}">
+        
+        <img src="${imageSrc}" 
+             class="w-12 h-12 md:w-16 md:h-16 object-contain pointer-events-none"
+             draggable="false">
+             
+      </div>`;
+  });
+  
+  html += '</div>';
+  contentDiv.innerHTML = html;
+}
       
       else if (challenge.type === 'memory') {
         const item = challenge.data[0];
