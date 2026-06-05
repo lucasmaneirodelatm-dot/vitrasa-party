@@ -1,0 +1,532 @@
+
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Party Vitrasa</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Nunito:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Nunito', sans-serif; }
+    .title-font { font-family: 'Fredoka', sans-serif; }
+    @keyframes diceToss { 0%, 100% { transform: rotateX(0) rotateY(0); } 50% { transform: rotateX(180deg) rotateY(180deg); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .dice-rolling { animation: diceToss 0.6s ease-out; }
+    .challenge-slide { animation: slideIn 0.3s ease-out; }
+    .board-square { aspect-ratio: 1; transition: all 0.2s; cursor: pointer; }
+    .board-square:hover { transform: scale(1.05); }
+    .board-square img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ <script src="/_sdk/telemetry_sdk.js"></script></head>
+ <body class="h-full">
+  <div id="app-wrapper" class="h-full w-full overflow-auto bg-gradient-to-br from-emerald-600 via-green-500 to-teal-600"><!-- Pantalla de Configuración -->
+   <div id="config-screen" class="min-h-full flex flex-col items-center justify-center p-4">
+    <div class="text-center mb-6">
+     <h1 class="title-font text-5xl font-bold text-white drop-shadow-lg mb-2">🚌 Party Vitrasa</h1>
+     <p class="text-white/90 text-lg">El Tablero Interactivo de Vitrasa</p>
+    </div>
+    <div class="bg-white/95 backdrop-blur rounded-3xl p-6 shadow-2xl max-w-md w-full">
+     <h2 class="title-font text-2xl font-bold text-emerald-700 mb-4 text-center">Configuración</h2>
+     <div class="mb-6"><label class="text-sm font-semibold text-gray-700 block mb-3">¿Cómo jugáis?</label>
+      <div class="space-y-2"><button onclick="selectGameMode('individual')" id="btn-individual" class="w-full p-3 border-2 border-emerald-500 bg-emerald-50 rounded-lg text-emerald-700 font-bold transition-all"> 👤 Individual (1-4 jugadores) </button> <button onclick="selectGameMode('teams')" id="btn-teams" class="w-full p-3 border-2 border-gray-300 bg-white rounded-lg text-gray-700 font-bold transition-all hover:border-emerald-500"> 👥 Equipos (2 o 4) </button>
+      </div>
+     </div>
+     <div class="mb-6"><label class="text-sm font-semibold text-gray-700 block mb-3">¿Cuántos?</label>
+      <div id="player-count-buttons" class="grid grid-cols-2 gap-2"><button onclick="selectPlayerCount(2)" class="p-2 bg-emerald-100 border border-emerald-300 rounded-lg font-bold text-emerald-700 hover:bg-emerald-200">2</button> <button onclick="selectPlayerCount(3)" class="p-2 bg-gray-100 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-gray-200">3</button> <button onclick="selectPlayerCount(4)" class="p-2 bg-gray-100 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-gray-200">4</button>
+      </div>
+     </div>
+     <div class="mb-6 max-h-48 overflow-y-auto"><label class="text-sm font-semibold text-gray-700 block mb-2">Nombres</label>
+      <div id="players-input" class="space-y-2"><input type="text" id="player-name-1" placeholder="Jugador 1" class="w-full p-2 border border-gray-300 rounded-lg text-sm"> <input type="text" id="player-name-2" placeholder="Jugador 2" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+      </div>
+     </div><button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold text-lg py-3 rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all"> 🎮 ¡Jugar! </button>
+    </div>
+   </div><!-- Pantalla de Juego -->
+   <div id="game-screen" class="hidden min-h-full p-3 md:p-4">
+    <div class="max-w-5xl mx-auto"><!-- Tablero -->
+     <div class="bg-white/95 backdrop-blur rounded-2xl p-4 mb-4 shadow-2xl">
+      <h2 class="title-font text-xl font-bold text-emerald-700 mb-3">Tablero Vitrasa</h2>
+      <div class="grid grid-cols-6 gap-2 md:grid-cols-8">
+       <div id="board-container"></div>
+      </div>
+     </div><!-- Turno actual -->
+     <div class="bg-white/95 backdrop-blur rounded-2xl p-4 mb-4 shadow-xl">
+      <div class="flex items-center justify-between">
+       <div>
+        <p class="text-xs md:text-sm text-gray-600">Turno de:</p>
+        <div class="title-font text-lg md:text-2xl font-bold text-emerald-700 flex items-center gap-2"><span id="player-color" class="w-5 h-5 rounded-full"></span> <span id="player-name-display" class="truncate">Jugador</span>
+        </div>
+       </div>
+       <div class="text-right">
+        <p class="text-xs md:text-sm text-gray-600">Posición:</p>
+        <p id="player-position-display" class="title-font text-2xl md:text-3xl font-bold text-emerald-600">0</p>
+       </div>
+      </div>
+     </div><!-- Dados -->
+     <div class="bg-white/95 backdrop-blur rounded-2xl p-4 mb-4 shadow-xl">
+      <div class="flex items-center justify-center gap-4">
+       <div id="dice-1" class="w-14 h-14 md:w-16 md:h-16 bg-white border-4 border-emerald-500 rounded-lg flex items-center justify-center text-3xl md:text-4xl font-bold shadow-lg">
+        🎲
+       </div>
+       <div id="dice-2" class="w-14 h-14 md:w-16 md:h-16 bg-white border-4 border-emerald-500 rounded-lg flex items-center justify-center text-3xl md:text-4xl font-bold shadow-lg">
+        🎲
+       </div><button onclick="rollDice()" id="roll-btn" class="bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold py-3 px-6 rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all text-base md:text-lg"> 🎲 Tirar </button>
+      </div>
+      <p id="dice-sum" class="title-font text-2xl md:text-3xl font-bold text-emerald-700 text-center mt-3">Suma: --</p>
+     </div><!-- Área de Prueba -->
+     <div id="challenge-area" class="hidden bg-white/95 backdrop-blur rounded-2xl p-4 mb-4 shadow-2xl challenge-slide">
+      <h2 class="title-font text-2xl font-bold text-emerald-700 mb-4 text-center">Prueba Vitrasa 🚌</h2>
+      <div id="challenge-content"></div>
+      <div id="challenge-feedback" class="mt-4 p-3 rounded-lg text-center font-bold text-white hidden"></div>
+     </div><!-- Panel de Jugadores -->
+     <div class="bg-white/95 backdrop-blur rounded-2xl p-4 shadow-2xl">
+      <h3 class="title-font text-lg font-bold text-emerald-700 mb-3">Clasificación</h3>
+      <div id="players-panel" class="space-y-2">
+      </div>
+     </div>
+    </div>
+   </div><!-- Pantalla de Victoria -->
+   <div id="victory-screen" class="hidden min-h-full flex flex-col items-center justify-center p-4">
+    <div class="text-center">
+     <div class="text-8xl mb-6">
+      🏆
+     </div>
+     <h1 class="title-font text-5xl font-bold text-white drop-shadow-lg mb-4">¡Victoria!</h1>
+     <div class="bg-white/20 backdrop-blur rounded-2xl p-6 mb-8 inline-block">
+      <p id="winner-name" class="text-4xl font-bold text-yellow-300 mb-2">Ganador</p>
+      <p id="winner-position" class="text-2xl text-white">Casilla: 40</p>
+     </div><button onclick="backToConfig()" class="bg-white text-emerald-600 font-bold text-xl py-3 px-8 rounded-2xl hover:bg-emerald-50 transition-colors shadow-lg"> 🔄 Nuevo Juego </button>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      game_title: 'Party Vitrasa',
+      winning_score: '40',
+      primary_color: '#059669',
+      secondary_color: '#FFFFFF',
+      text_color: '#1f2937',
+      accent_color: '#f59e0b',
+      button_color: '#10b981',
+      font_family: 'Nunito',
+      font_size: 16
+    };
+
+    let config = { ...defaultConfig };
+
+    const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+    // Imágenes del tablero - Reemplaza con tus URLs
+    const boardImages = [
+      'https://images.unsplash.com/photo-1570129477492-45ac003ff2d0?w=100&h=100&fit=crop',
+      'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=100&h=100&fit=crop',
+      'https://images.unsplash.com/photo-1520763185298-1b434c919eba?w=100&h=100&fit=crop',
+      'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=100&h=100&fit=crop',
+      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=100&h=100&fit=crop'
+    ];
+
+    let gameState = {
+      gameMode: 'individual',
+      players: [],
+      currentPlayerIndex: 0,
+      winsScore: 40,
+      diceResult: [0, 0],
+      isRolling: false,
+      hasRolled: false,
+      challengeActive: false,
+      boardSize: 40
+    };
+
+    // PRUEBAS VITRASA - Totalmente sobre la empresa
+    const challenges = [
+      {
+        name: '🚌 Trivia Vitrasa',
+        type: 'multipleChoice',
+        data: [
+          { question: '¿En qué año se fundó Vitrasa?', options: ['1975', '1968', '1980', '1982'], correct: 1, image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/all-images/lineas-colores-vitrasa.png' },
+          { question: '¿Cuál es el color corporativo de Vitrasa?', options: ['Azul y Blanco', 'Verde y Blanco', 'Rojo y Amarillo', 'Negro y Dorado'], correct: 1, image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/all-images/in-SVG/vitrasa-40-minutos.svg' },
+          { question: '¿Dónde está la sede de Vitrasa?', options: ['Coia', 'Navia', 'Cabral', 'Samil'], correct: 1, image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/Nueva-flota(26).png' },
+          { question: '¿Cuántos autobuses aproximadamente tiene Vitrasa?', options: ['110', '100', '130', '200'], correct: 2, image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/Nueva-flota.png' },
+          { question: '¿A qué ciudades va el Vitrasa?', options: ['Vigo y Pontevedra', 'Solo Vigo', 'Vigo, Redondela(solo en la zona de Chapela) y en la Frontera con Nigrán', 'Vigo y Redondela'], correct: 2, image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/all-images/vitrasa-trata-mal-poulo.png' }
+        ]
+      },
+      {
+        name: '🎯 Ordena las Líneas',
+        type: 'ranking',
+        data: [
+          { items: ['Línea C3', 'Línea C1', 'Línea 4A', 'Línea 25'], correct: [1, 3, 2, 0], description: 'Ordena las líneas de menor a mayor recorrido' },
+          { items: ['PSA-1', '28', 'A', 'U1'], correct: [0, 2, 1, 3], description: 'Ordena de menor hora a mayor hora de empezar servicio' }
+        ]
+      },
+      {
+        name: '⚡ Reacción Rápida',
+        type: 'reaction',
+        data: [
+          { prompt: 'Toca una línea que vaya a Bouzas', items: ['Línea C3d', 'Línea 14', 'Línea 15A', 'Línea 13'], targets: [0, 3], timeLimit: 4 },
+          { prompt: 'Toca una parada a la que vaya la C3d', items: ['Avda. de Vigo, 11', 'Avda. de Redondela (fronte 28)', 'Rúa de Ángel de Lema, 33', 'Rúa do Areiro, 93', 'Rúa da Ribeira do Berbés'], targets: [0, 2, 4], timeLimit: 6 }
+        ]
+      },
+      {
+        name: '🗺️ Rutas de Vitrasa',
+        type: 'routeSelection',
+        data: [
+          { question: '¿A dónde lleva esta L28?', routes: ['Centro-VigoNature', 'Aeropuerto-San Paio', 'Centro-Rabadeira', 'Estación F.F.C.C.-Centro'], correct: 0, image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/all-images/quien-esperaba-al-28.png' },
+          { question: '¿Cuál es la última parada de la L11 cuando va a Saiáns?', routes: ['Saiáns', 'Saiáns-Cabecera', 'Baixada á Praia, 4', 'Rúa de Saiáns S/N'], correct: 2, image: 'https://lucasmaneirodelatm-dot.github.io/vitrasa-party/public/images/all-images/huelga-mayo-23.png' }
+        ]
+      },
+      {
+        name: '✅ Verdadero o Falso',
+        type: 'truefalse',
+        data: [
+          { statement: 'Vitrasa opera solo en Vigo', correct: false },
+          { statement: 'Los autobuses Vitrasa son totalmente eléctricos', correct: false },
+          { statement: 'Vitrasa tiene más de 30 líneas de autobús', correct: true },
+          { statement: 'El color de Vitrasa es el verde', correct: true },
+          { statement: 'Vitrasa es VIguesa de TRAnsportes S.A.', correct: true }
+        ]
+      }
+    ];
+
+    const element = {
+      defaultConfig,
+      onConfigChange: async (newConfig) => {
+        config = { ...defaultConfig, ...newConfig };
+        gameState.winsScore = parseInt(config.winning_score) || 40;
+      },
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.primary_color, set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+          { get: () => config.secondary_color, set: (v) => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } },
+          { get: () => config.button_color, set: (v) => { config.button_color = v; window.elementSdk.setConfig({ button_color: v }); } }
+        ],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['game_title', config.game_title],
+        ['winning_score', config.winning_score]
+      ])
+    };
+
+    if (window.elementSdk) window.elementSdk.init(element);
+
+    function selectGameMode(mode) {
+      gameState.gameMode = mode;
+      document.getElementById('btn-individual').classList.toggle('bg-emerald-50', mode === 'individual');
+      document.getElementById('btn-individual').classList.toggle('bg-white', mode !== 'individual');
+      document.getElementById('btn-teams').classList.toggle('bg-emerald-50', mode === 'teams');
+      document.getElementById('btn-teams').classList.toggle('bg-white', mode !== 'teams');
+      selectPlayerCount(2);
+    }
+
+    function selectPlayerCount(count) {
+      const container = document.getElementById('players-input');
+      container.innerHTML = '';
+      
+      for (let i = 1; i <= count; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = `player-name-${i}`;
+        input.placeholder = gameState.gameMode === 'teams' ? `Equipo ${i}` : `Jugador ${i}`;
+        input.className = 'w-full p-2 border border-gray-300 rounded-lg text-sm';
+        container.appendChild(input);
+      }
+      
+      document.querySelectorAll('#player-count-buttons button').forEach(btn => {
+        btn.classList.remove('bg-emerald-100', 'border-emerald-300', 'text-emerald-700');
+        btn.classList.add('bg-gray-100', 'border-gray-300', 'text-gray-700');
+      });
+      event.target.classList.remove('bg-gray-100', 'border-gray-300', 'text-gray-700');
+      event.target.classList.add('bg-emerald-100', 'border-emerald-300', 'text-emerald-700');
+    }
+
+    function startGame() {
+      const playerCount = document.getElementById('players-input').children.length;
+      gameState.players = [];
+      
+      for (let i = 1; i <= playerCount; i++) {
+        const nameInput = document.getElementById(`player-name-${i}`);
+        const name = nameInput.value.trim() || (gameState.gameMode === 'teams' ? `Equipo ${i}` : `Jugador ${i}`);
+        gameState.players.push({
+          name: name,
+          position: 0,
+          color: playerColors[(i - 1) % playerColors.length]
+        });
+      }
+      
+      gameState.currentPlayerIndex = 0;
+      gameState.winsScore = parseInt(config.winning_score) || 40;
+      
+      document.getElementById('config-screen').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+      
+      renderBoard();
+      updatePlayerDisplay();
+      renderPlayersPanel();
+    }
+
+    function renderBoard() {
+      const container = document.getElementById('board-container').parentElement;
+      container.innerHTML = '';
+      
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-cols-8 gap-2 md:gap-3';
+      
+      for (let i = 0; i < gameState.boardSize; i++) {
+        const square = document.createElement('div');
+        square.className = 'board-square bg-gray-100 border-2 border-gray-300 flex flex-col items-center justify-center p-1 relative group';
+        
+        const img = document.createElement('img');
+        img.src = boardImages[i % boardImages.length];
+        img.alt = `Casilla ${i + 1}`;
+        img.loading = 'lazy';
+        img.onerror = () => { img.style.display = 'none'; square.style.backgroundColor = '#10b981'; };
+        
+        const label = document.createElement('div');
+        label.className = 'absolute bottom-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity';
+        label.textContent = i + 1;
+        
+        square.appendChild(img);
+        square.appendChild(label);
+        
+        // Mostrar jugadores en casillas
+        const playersHere = gameState.players.filter(p => p.position === i);
+        if (playersHere.length > 0) {
+          const playerTokens = document.createElement('div');
+          playerTokens.className = 'absolute -top-2 -right-2 flex gap-0.5';
+          playersHere.forEach(p => {
+            const token = document.createElement('div');
+            token.className = 'w-5 h-5 rounded-full border-2 border-white shadow-lg';
+            token.style.backgroundColor = p.color;
+            playerTokens.appendChild(token);
+          });
+          square.appendChild(playerTokens);
+        }
+        
+        grid.appendChild(square);
+      }
+      
+      container.parentElement.innerHTML = `<h2 class="title-font text-xl font-bold text-emerald-700 mb-3">Tablero Vitrasa</h2>`;
+      container.parentElement.appendChild(grid);
+    }
+
+    function updatePlayerDisplay() {
+      const player = gameState.players[gameState.currentPlayerIndex];
+      document.getElementById('player-name-display').textContent = player.name;
+      document.getElementById('player-color').style.backgroundColor = player.color;
+      document.getElementById('player-position-display').textContent = player.position;
+    }
+
+    function renderPlayersPanel() {
+      const panel = document.getElementById('players-panel');
+      panel.innerHTML = '';
+      
+      gameState.players.forEach((player, index) => {
+        const div = document.createElement('div');
+        div.className = `p-3 rounded-lg ${index === gameState.currentPlayerIndex ? 'bg-emerald-100 border-2 border-emerald-500' : 'bg-gray-50'} transition-all`;
+        div.innerHTML = `
+          <div class="flex items-center gap-2 justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 rounded-full" style="background-color: ${player.color}"></div>
+              <span class="font-semibold text-sm text-gray-800">${player.name}</span>
+            </div>
+            <span class="title-font font-bold text-lg text-emerald-600">Casilla ${player.position}</span>
+          </div>
+          <div class="mt-1 w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-emerald-400 to-green-500" style="width: ${Math.min(100, (player.position / gameState.winsScore) * 100)}%"></div>
+          </div>
+        `;
+        panel.appendChild(div);
+      });
+    }
+
+    function rollDice() {
+      if (gameState.isRolling || gameState.hasRolled || gameState.challengeActive) return;
+      
+      gameState.isRolling = true;
+      document.getElementById('roll-btn').disabled = true;
+      
+      const dice1 = document.getElementById('dice-1');
+      const dice2 = document.getElementById('dice-2');
+      
+      dice1.classList.add('dice-rolling');
+      dice2.classList.add('dice-rolling');
+      
+      setTimeout(() => {
+        gameState.diceResult[0] = Math.floor(Math.random() * 6) + 1;
+        gameState.diceResult[1] = Math.floor(Math.random() * 6) + 1;
+        const sum = gameState.diceResult[0] + gameState.diceResult[1];
+        
+        dice1.classList.remove('dice-rolling');
+        dice2.classList.remove('dice-rolling');
+        
+        dice1.textContent = gameState.diceResult[0];
+        dice2.textContent = gameState.diceResult[1];
+        
+        document.getElementById('dice-sum').textContent = `Suma: ${sum}`;
+        
+        gameState.isRolling = false;
+        gameState.hasRolled = true;
+        
+        setTimeout(() => showChallenge(sum), 500);
+      }, 600);
+    }
+
+    function showChallenge(points) {
+      gameState.challengeActive = true;
+      const challenge = challenges[Math.floor(Math.random() * challenges.length)];
+      const challengeArea = document.getElementById('challenge-area');
+      const contentDiv = document.getElementById('challenge-content');
+      
+      challengeArea.classList.remove('hidden');
+      contentDiv.innerHTML = '';
+      
+      if (challenge.type === 'multipleChoice') {
+        const item = challenge.data[Math.floor(Math.random() * challenge.data.length)];
+        let html = '';
+        if (item.image) {
+          html += `<div class="mb-4 rounded-lg overflow-hidden max-h-40"><img src="${item.image}" alt="Pregunta" loading="lazy" onerror="this.style.display='none'" class="w-full h-40 object-cover"></div>`;
+        }
+        html += `<p class="text-center text-lg md:text-xl font-semibold text-gray-800 mb-4">${item.question}</p>`;
+        html += '<div class="grid grid-cols-2 gap-3">';
+        item.options.forEach((opt, i) => {
+          html += `<button class="p-3 bg-blue-100 hover:bg-blue-200 active:scale-95 border-2 border-blue-300 rounded-lg font-bold text-base transition-all" onclick="handleAnswer(${i}, ${item.correct}, ${points}, '${challenge.name}')">
+            ${opt}
+          </button>`;
+        });
+        html += '</div>';
+        contentDiv.innerHTML = html;
+      }
+      
+      else if (challenge.type === 'truefalse') {
+        const item = challenge.data[Math.floor(Math.random() * challenge.data.length)];
+        let html = `<p class="text-center text-lg md:text-xl font-semibold text-gray-800 mb-6">${item.statement}</p>`;
+        html += '<div class="flex gap-4 justify-center">';
+        html += `<button class="px-8 py-4 bg-green-100 hover:bg-green-200 active:scale-95 border-2 border-green-500 rounded-lg font-bold text-lg text-green-700 transition-all" onclick="handleAnswer(true, ${item.correct}, ${points}, '${challenge.name}')">
+          ✅ Verdadero
+        </button>`;
+        html += `<button class="px-8 py-4 bg-red-100 hover:bg-red-200 active:scale-95 border-2 border-red-500 rounded-lg font-bold text-lg text-red-700 transition-all" onclick="handleAnswer(false, ${item.correct}, ${points}, '${challenge.name}')">
+          ❌ Falso
+        </button>`;
+        html += '</div>';
+        contentDiv.innerHTML = html;
+      }
+      
+      else if (challenge.type === 'reaction') {
+        const item = challenge.data[Math.floor(Math.random() * challenge.data.length)];
+        let html = `<p class="text-center text-lg font-bold text-emerald-700 mb-4">${item.prompt}</p>`;
+        html += '<div class="grid grid-cols-3 gap-2 md:gap-3">';
+        item.items.forEach((it, i) => {
+          const isTarget = item.targets.includes(i);
+          html += `<button class="p-4 bg-gray-100 hover:bg-gray-200 active:scale-95 border-2 border-gray-300 rounded-lg font-bold text-base transition-all" onclick="handleReaction(${i}, ${isTarget}, ${points}, '${challenge.name}')">
+            ${it}
+          </button>`;
+        });
+        html += '</div>';
+        contentDiv.innerHTML = html;
+      }
+    }
+
+    function handleAnswer(selected, correct, points, challengeName) {
+      const feedbackDiv = document.getElementById('challenge-feedback');
+      const challengeArea = document.getElementById('challenge-area');
+      
+      if (selected === correct) {
+        const newPosition = Math.min(gameState.players[gameState.currentPlayerIndex].position + points, gameState.boardSize - 1);
+        gameState.players[gameState.currentPlayerIndex].position = newPosition;
+        feedbackDiv.textContent = `✅ ¡Correcto! +${points} casillas`;
+        feedbackDiv.className = 'mt-4 p-3 rounded-lg text-center font-bold text-white bg-green-500';
+      } else {
+        feedbackDiv.textContent = '❌ Incorrecto, permaneces en tu casilla';
+        feedbackDiv.className = 'mt-4 p-3 rounded-lg text-center font-bold text-white bg-red-500';
+      }
+      feedbackDiv.classList.remove('hidden');
+      
+      setTimeout(() => {
+        feedbackDiv.classList.add('hidden');
+        challengeArea.classList.add('hidden');
+        nextTurn();
+      }, 1500);
+    }
+
+    function handleReaction(selected, isTarget, points, challengeName) {
+      const feedbackDiv = document.getElementById('challenge-feedback');
+      const challengeArea = document.getElementById('challenge-area');
+      
+      if (isTarget) {
+        const newPosition = Math.min(gameState.players[gameState.currentPlayerIndex].position + points, gameState.boardSize - 1);
+        gameState.players[gameState.currentPlayerIndex].position = newPosition;
+        feedbackDiv.textContent = `✅ ¡Bien! +${points} casillas`;
+        feedbackDiv.className = 'mt-4 p-3 rounded-lg text-center font-bold text-white bg-green-500';
+      } else {
+        feedbackDiv.textContent = '❌ ¡No era ese!';
+        feedbackDiv.className = 'mt-4 p-3 rounded-lg text-center font-bold text-white bg-red-500';
+      }
+      feedbackDiv.classList.remove('hidden');
+      
+      setTimeout(() => {
+        feedbackDiv.classList.add('hidden');
+        challengeArea.classList.add('hidden');
+        nextTurn();
+      }, 1500);
+    }
+
+    function nextTurn() {
+      gameState.challengeActive = false;
+      gameState.hasRolled = false;
+      gameState.diceResult = [0, 0];
+      
+      document.getElementById('dice-1').textContent = '🎲';
+      document.getElementById('dice-2').textContent = '🎲';
+      document.getElementById('dice-sum').textContent = 'Suma: --';
+      document.getElementById('roll-btn').disabled = false;
+      
+      renderBoard();
+      
+      if (gameState.players[gameState.currentPlayerIndex].position >= gameState.boardSize - 1) {
+        showVictory();
+        return;
+      }
+      
+      gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+      
+      updatePlayerDisplay();
+      renderPlayersPanel();
+    }
+
+    function showVictory() {
+      const winner = gameState.players[gameState.currentPlayerIndex];
+      
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('victory-screen').classList.remove('hidden');
+      
+      document.getElementById('winner-name').textContent = winner.name;
+      document.getElementById('winner-position').textContent = `Casilla: ${winner.position}`;
+    }
+
+    function backToConfig() {
+      document.getElementById('victory-screen').classList.add('hidden');
+      document.getElementById('config-screen').classList.remove('hidden');
+      gameState = {
+        gameMode: 'individual',
+        players: [],
+        currentPlayerIndex: 0,
+        winsScore: 40,
+        diceResult: [0, 0],
+        isRolling: false,
+        hasRolled: false,
+        challengeActive: false,
+        boardSize: 40
+      };
+      selectGameMode('individual');
+    }
+
+    selectGameMode('individual');
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0607b55aa83cbc3',t:'MTc4MDUwODQxNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
